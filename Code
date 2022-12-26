@@ -1,0 +1,90 @@
+import numpy as np
+import pandas as pd
+from tqdm import tqdm
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver import ActionChains
+from bs4 import BeautifulSoup
+from json import dumps
+import requests
+import re
+import time
+import csv
+from IPython.display import HTML
+
+
+url='https://collegeresults.org'
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+driver.implicitly_wait(0.1)
+driver.get(url)
+
+def listbutton():
+    pop_up=driver.find_elements(By.CLASS_NAME,"modal-buttons")
+    pop_up[0].click()
+    shadow_root_script="return document.querySelector('cr-map').shadowRoot.querySelector('div.cr-map')"
+    item=driver.execute_script(shadow_root_script)
+    list_bar=item.find_elements(By.CLASS_NAME,"map-sidebar__tab")[0]
+    list_bar.click()
+    univs=item.find_elements(By.CLASS_NAME,"sr")
+    #item.find_elements(By.CLASS_NAME,"institution-view__close")[0].click()
+    return item,univs
+    
+    def run():
+    page,univs=listbutton()
+    indexes=list(range(1,len(univs)))
+    df = pd.DataFrame(columns=[])
+    for i in tqdm(indexes):
+        if i <5:
+            univs[i].click()
+            header=page.find_element(By.CLASS_NAME,"institution-view__title").text.split('\n')
+            body=page.find_element(By.CLASS_NAME,"institution-view__tabbed-section").text.split('\n')
+            text_array = header + body
+            
+            dfcc = pd.DataFrame(columns=[])
+            count=0
+            for table in page.find_elements(By.CLASS_NAME,"institution-overview__stats"):
+                count=count+1
+                if count==1:
+                    print("CC")
+                    c1=0
+                    for tdhead in table.find_elements(By.CLASS_NAME,"stat__label"):
+                        print(tdhead.text)
+                        dfcc[c1].columns=tdhead.text
+                        c1=c1+1
+                    for tdval in table.find_elements(By.CLASS_NAME,"stat__value"):
+                        print(tdval.text)
+                elif count==2:
+                    print("ANP")
+                    for tdhead in table.find_elements(By.CLASS_NAME,"stat__label"):
+                        print(tdhead.text)
+                    for tdval in table.find_elements(By.CLASS_NAME,"stat__value"):
+                        print(tdval.text)
+                elif count==3:
+                    print("SB")
+                    for tdhead in table.find_elements(By.CLASS_NAME,"stat__label"):
+                        print(tdhead.text)
+                    for tdval in table.find_elements(By.CLASS_NAME,"stat__value"):
+                        print(tdval.text)
+                elif count==4:
+                    print("GR")
+                    for tdhead in table.find_elements(By.CLASS_NAME,"stat__label"):
+                        print(tdhead.text)
+                    for tdval in table.find_elements(By.CLASS_NAME,"stat__value"):
+                        print(tdval.text)
+                elif count==5:
+                    print("FO")
+                    for tdhead in table.find_elements(By.CLASS_NAME,"stat__label"):
+                        print(tdhead.text)
+                    for tdval in table.find_elements(By.CLASS_NAME,"stat__value"):
+                        print(tdval.text)
+                     
+            print(dfcc)
+            page.find_elements(By.CLASS_NAME,"institution-view__close")[0].click()
+        else:
+            break
+    
+run()
